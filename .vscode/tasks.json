@@ -1,0 +1,26 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "g++",
+            "args":[
+                    "-g",
+                    "${file}",
+                    "-o",
+                    "${fileDirname}\\bin\\${fileBasenameNoExtension}.exe"
+                ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "build and run",
+            "type": "shell",
+            "command": "g++ ${file} -o temp.exe && temp.exe && del temp.exe",
+            "group": "build"
+        }
+    ]
+}
