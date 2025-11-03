@@ -1,0 +1,9 @@
+{
+    "code-runner.executorMap": {
+        "cpp": "cd $dir && g++ $fileName -o $fileNameWithoutExt.exe && ./$fileNameWithoutExt.exe"
+    },
+    "code-runner.runInTerminal": true,
+    "terminal.integrated.fontFamily": "CaskaydiaCove NF",
+    "terminal.integrated.shellArgs.windows": ["-nologo"],
+    "editor.formatOnSave": true
+}

@@ -1,0 +1,77 @@
+=== Demo Script: Chat Server Usage ===
+
+1. Start Server
+   Terminal 1:
+   $ ./server
+   Server listening on port 9090
+
+2. Connect Client 1 (user1)
+   Terminal 2:
+   $ ./client 127.0.0.1
+   Username: user1
+   Password: pass1
+   Authenticated. Commands: /LIST /TIME /EXIT /UPLOAD /DOWNLOAD
+   
+3. Connect Client 2 (alice)
+   Terminal 3:
+   $ ./client 127.0.0.1
+   Username: alice
+   Password: wonder
+   Authenticated. Commands: /LIST /TIME /EXIT /UPLOAD /DOWNLOAD
+   user1 has joined the chat
+
+4. Chat between clients
+   Terminal 2 (user1):
+   > Hello everyone!
+   
+   Terminal 3 (alice):
+   user1: Hello everyone!
+   > Hi user1, how are you?
+   
+   Terminal 2 (user1):
+   alice: Hi user1, how are you?
+   > I'm good, thanks!
+
+5. List connected clients
+   Terminal 2 (user1):
+   > /LIST
+   Connected clients:
+    - user1
+    - alice
+
+6. Get server time
+   Terminal 3 (alice):
+   > /TIME
+   Server time: 2025-11-03 14:30:45
+
+7. Upload a file
+   Terminal 2 (user1):
+   $ echo "Test content" > testfile.txt
+   > /UPLOAD testfile.txt myfile.txt
+   UPLOAD OK
+
+8. Download the file
+   Terminal 3 (alice):
+   > /DOWNLOAD myfile.txt
+   Receiving file (13 bytes)...
+   Saved to downloads/last_download
+   
+9. Disconnect
+   Terminal 2 (user1):
+   > /EXIT
+   Goodbye
+   
+   Terminal 3 (alice):
+   user1 has left the chat
+
+10. Check server log
+    $ cat server_log.txt
+    [2025-11-03 14:28:30] user1 connected (sock=4)
+    [2025-11-03 14:29:15] alice connected (sock=5)
+    [2025-11-03 14:29:45] user1: Hello everyone!
+    [2025-11-03 14:30:10] alice: Hi user1, how are you?
+    [2025-11-03 14:30:20] user1: I'm good, thanks!
+    [2025-11-03 14:31:05] user1 uploading myfile.txt (13 bytes)
+    [2025-11-03 14:31:05] user1 upload OK myfile.txt
+    [2025-11-03 14:31:40] alice requested download myfile.txt
+    [2025-11-03 14:32:10] user1 disconnected (sock=4)
