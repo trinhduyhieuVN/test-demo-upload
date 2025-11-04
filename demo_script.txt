@@ -1,7 +1,14 @@
-=== Demo Script: Chat Server Usage ===
+=== Demo Script: IPC Client-Server Chat ===
 
-1. Start Server
+This script demonstrates all 3 IPC methods implemented in this project.
+
+========================================
+METHOD 1: SOCKET TCP (Network IPC)
+========================================
+
+1. Start Socket TCP Server
    Terminal 1:
+   $ make socket
    $ ./server
    Server listening on port 9090
 
@@ -75,3 +82,163 @@
     [2025-11-03 14:31:05] user1 upload OK myfile.txt
     [2025-11-03 14:31:40] alice requested download myfile.txt
     [2025-11-03 14:32:10] user1 disconnected (sock=4)
+
+========================================
+METHOD 2: MESSAGE QUEUE IPC (True IPC)
+========================================
+
+1. Build Message Queue variant
+   $ make msgqueue
+
+2. Start Message Queue Server
+   Terminal 1:
+   $ ./ipc_msgqueue_server
+   Message Queue Server started
+   Queue name: /chat_server_mq
+   Waiting for messages...
+
+3. Connect Client 1
+   Terminal 2:
+   $ ./ipc_msgqueue_client
+   === Message Queue Chat Client ===
+   Username: bob
+   Connected to server via message queue
+   Type messages or commands (/LIST, /TIME, /EXIT):
+
+4. Connect Client 2
+   Terminal 3:
+   $ ./ipc_msgqueue_client
+   Username: carol
+   Connected to server via message queue
+   bob has joined the chat
+
+5. Test chat
+   Terminal 2 (bob):
+   > Hello from Message Queue!
+   
+   Terminal 3 (carol):
+   bob: Hello from Message Queue!
+   > Hi bob! This is fast!
+
+6. List clients
+   Terminal 2 (bob):
+   > /LIST
+   Connected clients:
+    - bob
+    - carol
+
+7. Get time
+   > /TIME
+   Server time: 2025-11-03 15:00:00
+
+8. Exit
+   > /EXIT
+   Goodbye
+   Disconnected
+
+9. View message queues
+   $ ls /dev/mqueue/
+   chat_server_mq
+   chat_client_12345
+   chat_client_12346
+
+10. Check log
+    $ cat server_log_mq.txt
+    [2025-11-03 15:00:00] bob (/chat_client_12345) connected
+    [2025-11-03 15:00:15] carol (/chat_client_12346) connected
+    [2025-11-03 15:00:30] bob: Hello from Message Queue!
+    [2025-11-03 15:00:45] carol: Hi bob! This is fast!
+
+========================================
+METHOD 3: NAMED PIPE IPC (FIFO)
+========================================
+
+1. Build Named Pipe variant
+   $ make pipe
+
+2. Start Named Pipe Server
+   Terminal 1:
+   $ ./ipc_pipe_server
+   Named Pipe Server started
+   FIFO: /tmp/chat_server_fifo
+   Waiting for messages...
+
+3. Connect Client 1
+   Terminal 2:
+   $ ./ipc_pipe_client
+   === Named Pipe Chat Client ===
+   Username: dave
+   Connected to server via named pipe
+   Type messages or commands (/LIST, /TIME, /EXIT):
+
+4. Connect Client 2
+   Terminal 3:
+   $ ./ipc_pipe_client
+   Username: eve
+   Connected to server via named pipe
+   dave has joined the chat
+
+5. Test chat
+   Terminal 2 (dave):
+   > Hello via pipes!
+   
+   Terminal 3 (eve):
+   dave: Hello via pipes!
+   > Pipes are simple!
+
+6. Commands
+   Terminal 2:
+   > /LIST
+   Connected clients:
+    - dave
+    - eve
+   
+   > /TIME
+   Server time: 2025-11-03 16:00:00
+
+7. Exit
+   > /EXIT
+   Goodbye
+   Disconnected
+
+8. View FIFOs
+   $ ls -l /tmp/chat_*
+   prw-rw-rw- 1 user user 0 Nov  3 16:00 /tmp/chat_server_fifo
+   prw-rw-rw- 1 user user 0 Nov  3 16:00 /tmp/chat_client_54321
+   prw-rw-rw- 1 user user 0 Nov  3 16:00 /tmp/chat_client_54322
+
+9. Check log
+   $ cat server_log_pipe.txt
+   [2025-11-03 16:00:00] dave (/tmp/chat_client_54321) connected
+   [2025-11-03 16:00:20] eve (/tmp/chat_client_54322) connected
+   [2025-11-03 16:00:35] dave: Hello via pipes!
+   [2025-11-03 16:00:50] eve: Pipes are simple!
+
+========================================
+COMPARISON SUMMARY
+========================================
+
+Socket TCP:
+  ✓ Works over network (local + remote)
+  ✓ File upload/download
+  ✓ Full authentication
+  ✗ Slower (network stack overhead)
+
+Message Queue:
+  ✓ Fast (no network overhead)
+  ✓ Async messaging
+  ✓ Message priority support
+  ✗ Same machine only
+  ✗ Message size limit
+
+Named Pipe:
+  ✓ Fast (kernel IPC)
+  ✓ Simple (file-like API)
+  ✓ Shell-friendly
+  ✗ Same machine only
+  ✗ Blocking behavior
+
+========================================
+For detailed comparison, see IPC_COMPARISON.md
+========================================
+
