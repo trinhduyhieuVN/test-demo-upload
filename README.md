@@ -1,18 +1,34 @@
-# Simple TCP Chat (C) — Multi-client Server & Client
+# IPC Client-Server Chat (C) — Multiple IPC Methods
 
-A modular, multi-client TCP chat application written in C for Linux/POSIX, featuring authentication, logging, commands, broadcast messaging, and file transfer capabilities.
+A comprehensive Inter-Process Communication (IPC) demonstration project in C, implementing client-server chat using **3 different IPC methods**: Socket TCP, POSIX Message Queue, and Named Pipes (FIFOs).
+
+## 🎯 Project Overview
+
+This project fulfills the "IPC Client-Server" requirement by implementing:
+1. ✅ **Socket TCP** — Network-based IPC (client-server over network)
+2. ✅ **POSIX Message Queue** — Kernel-managed async messaging (true IPC)
+3. ✅ **Named Pipes (FIFOs)** — File-based stream IPC (true IPC)
+
+All implementations support:
+- Multi-client communication
+- Authentication
+- Logging with timestamps
+- Commands (/LIST, /TIME, /EXIT)
+- Broadcast messaging
+
+**📖 See [IPC_COMPARISON.md](IPC_COMPARISON.md) for detailed comparison of methods.**
 
 ## Features
 
 - **Multi-client server** using pthreads for concurrent connections
 - **Authentication** with username/password (hard-coded credentials)
-- **Conversation logging** to `server_log.txt` with timestamps
+- **Conversation logging** to log files with timestamps
 - **Chat commands:**
   - `/LIST` — list all connected clients
   - `/TIME` — get current server time
   - `/EXIT` — disconnect from server
-  - `/UPLOAD <localpath> [remotename]` — upload a file to server
-  - `/DOWNLOAD <filename>` — download a file from server
+  - `/UPLOAD <localpath> [remotename]` — upload a file (Socket TCP only)
+  - `/DOWNLOAD <filename>` — download a file (Socket TCP only)
 - **Broadcast chat** — messages sent to all connected clients
 - **Modular architecture** for maintainability and extensibility
 
@@ -20,19 +36,20 @@ A modular, multi-client TCP chat application written in C for Linux/POSIX, featu
 
 ```
 IPC_Project_Group5/
-├── protocol.h          # Common protocol definitions and constants
-├── socket_utils.h      # Socket utility functions (send/recv helpers)
-├── socket_utils.c      # Implementation of socket utilities
-├── socket_init.c       # Server socket initialization and accept loop
-├── server_thread.c     # Client thread handler (auth, commands, file ops)
-├── server.c            # Main server entry point
-├── client_ui.c         # Client UI and interaction logic
-├── client.c            # Main client entry point
-├── Makefile            # Build configuration
-├── run.sh              # Script to build and start server
-├── test_clients.sh     # Demo script to launch multiple clients
-├── demo_script.txt     # Example usage walkthrough
-└── README.md           # This file
+├── protocol.h                # Common protocol definitions
+├── socket_utils.{h,c}        # Socket utility functions
+├── socket_init.c             # Server socket initialization
+├── server_thread.c           # Client thread handler
+├── server.c / client.c       # Socket TCP implementation
+├── client_ui.c               # Client UI logic
+├── ipc_msgqueue_server.c     # Message Queue server
+├── ipc_msgqueue_client.c     # Message Queue client
+├── ipc_pipe_server.c         # Named Pipe server
+├── ipc_pipe_client.c         # Named Pipe client
+├── Makefile                  # Build all IPC variants
+├── IPC_COMPARISON.md         # Detailed IPC method comparison
+├── SETUP_UBUNTU.md           # Ubuntu VM setup instructions
+└── README.md                 # This file
 ```
 
 ## Build Instructions (Linux)
@@ -43,10 +60,13 @@ IPC_Project_Group5/
 - Make utility
 - POSIX-compliant system (Linux, WSL, macOS)
 
-### Compile
+### Compile All
 
 ```bash
-make
+make              # Build all IPC variants
+make socket       # Build only Socket TCP version
+make msgqueue     # Build only Message Queue version
+make pipe         # Build only Named Pipe version
 ```
 
 This will compile both `server` and `client` executables.
@@ -59,37 +79,77 @@ make clean
 
 ## Usage
 
-### 1. Start the Server
+## Method 1: Socket TCP (Network IPC)
 
+**Use when:** Client and server on different machines or over network
+
+### Start Server
 ```bash
 ./server
 ```
 
-The server will listen on port **9090** and accept incoming connections.
-
-### 2. Connect Clients
-
-Open a new terminal for each client:
-
+### Connect Clients (same or different machines)
 ```bash
-./client 127.0.0.1
+./client 127.0.0.1           # Local
+./client 192.168.1.100       # Remote machine
 ```
 
-You can connect from remote machines by replacing `127.0.0.1` with the server's IP address.
-
-### 3. Authenticate
-
-When you connect, the server will prompt for credentials:
-
-**Available credentials:**
-
+### Authenticate
 - Username: `user1` / Password: `pass1`
 - Username: `user2` / Password: `pass2`
 - Username: `alice` / Password: `wonder`
 
-### 4. Chat and Use Commands
+---
 
-After authentication:
+## Method 2: POSIX Message Queue (True IPC)
+
+**Use when:** Client and server on same machine, need async messaging
+
+### Start Server
+```bash
+./ipc_msgqueue_server
+```
+
+### Connect Clients (same machine only)
+```bash
+./ipc_msgqueue_client
+```
+
+Enter username when prompted (no password for IPC variants)
+
+### View Queues
+```bash
+ls /dev/mqueue/
+```
+
+---
+
+## Method 3: Named Pipes / FIFOs (True IPC)
+
+**Use when:** Client and server on same machine, need stream-based communication
+
+### Start Server
+```bash
+./ipc_pipe_server
+```
+
+### Connect Clients (same machine only)
+```bash
+./ipc_pipe_client
+```
+
+Enter username when prompted
+
+### View Pipes
+```bash
+ls -l /tmp/chat_*
+```
+
+---
+
+## Commands (All Methods)
+
+After authentication / connection:
 
 - Type a message and press Enter to broadcast to all clients
 - Use commands starting with `/` (e.g., `/LIST`, `/TIME`, `/EXIT`)
